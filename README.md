@@ -1,13 +1,19 @@
 # Docker Image with InfluxDB, Telegraf and Grafana
 
-The purpose of this docker image is to provide an image for Debian and arm32v7 (Raspberry Pi).
+The purpose of this docker image is to provide an image for arm32v7 (Raspberry Pi).
 
 | Description  | Value             |
 |--------------|-------------------|
-| OS           | debian \| arm32v7 |
+| OS           | arm32v7           |
 | InfluxDB     | 1.6.4             |
 | Telegraf     | 1.8.2             |
-| Grafana      | 5.3.2             |
+| Grafana      | 5.4.3             |
+
+## Note
+
+This is a fork of the repository created by Daniel Gomez. As the last image was over 3 years old and uses 'ancient' versions of Grafana, InfluxDB and Telegraf I decided to take a shot and see if I could get this to a higher level.
+As to keep it working I might do this in small steps.
+As I have only a Raspberry Pi I can only test the image on arm32v7.
 
 ## Quick Start
 
@@ -25,24 +31,7 @@ docker run -d \
   -v /path/for/grafana:/var/lib/grafana \
   -e "GF_SECURITY_ADMIN_USER=<YOU_USERNAME_HERE>" \
   -e "GF_SECURITY_ADMIN_PASSWORD=<YOU_PASSWORD_HERE>" \
-  dcsg/influxdb-grafana-telegraf:arm32v7-1.0.2
-```
-
-#### Debian
-
-Start the container by running the following command:
-
-```sh
-docker run -d \
-  --name influxdb-grafana \
-  --restart unless-stopped \
-  -p 3003:3003 \
-  -p 8086:8086 \
-  -v /path/for/influxdb:/var/lib/influxdb \
-  -v /path/for/grafana:/var/lib/grafana \
-  -e "GF_SECURITY_ADMIN_USER=<YOU_USERNAME_HERE>" \
-  -e "GF_SECURITY_ADMIN_PASSWORD=<YOU_PASSWORD_HERE>" \
-  dcsg/influxdb-grafana-telegraf:debian-1.0.2
+  pluim003/influxdb-grafana-telegraf:latest
 ```
 
 To stop the container launch:
