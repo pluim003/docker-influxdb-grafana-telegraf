@@ -1,17 +1,17 @@
-# Docker Image with InfluxDB, Telegraf and Grafana
+# Docker Image with InfluxDB, Grafana and Telegraf
 
 The purpose of this docker image is to provide an image for arm32v7 (Raspberry Pi).
 
 | Description  | Value             |
 |--------------|-------------------|
 | OS           | arm32v7           |
-| InfluxDB     | 1.7.0             |
+| InfluxDB     | 1.8.10            |
+| Grafana      | 8.3.4             |
 | Telegraf     | 1.21.2            |
-| Grafana      | 5.4.3             |
 
 ## Note
 
-This is a fork of the repository created by Daniel Gomez. As the last image was over 3 years old and uses 'ancient' versions of Grafana, InfluxDB and Telegraf I decided to take a shot and see if I could get this to more recent versions and still keep it working. And meanwhile learning a bit of creating/maintaining/modifying docker-images.
+This is a fork of the repository created by Daniel Gomez. As the last image was over 3 years old and uses 'ancient' versions of InfluxDB, Grafana and Telegraf I decided to take a shot and see if I could get this to more recent versions and still keep it working. And meanwhile learning a bit of creating/maintaining/modifying docker-images.
 As to keep it working I might do this in small steps.
 As I have only a Raspberry Pi I can only test the image on arm32v7.
 
@@ -34,6 +34,7 @@ docker run -d \
   -v /path/for/telegraf_log:/var/log/telegraf \ 
   -e "GF_SECURITY_ADMIN_USER=<YOU_USERNAME_HERE>" \
   -e "GF_SECURITY_ADMIN_PASSWORD=<YOU_PASSWORD_HERE>" \
+  -e "TZ=<YOUR_LOCAL_TIMEZONE_HERE>"
   pluim003/influxdb-grafana-telegraf:latest
 ```
 
@@ -49,6 +50,36 @@ To start the container again launch:
 
 ```sh
 docker start influxdb-grafana
+```
+
+To backup your Docker-volumes you can use the following script:
+
+```sh
+#!/bin/bash
+
+CONTAINER=influxdb-grafana
+RUNNING_CONTAINER=$(docker container ls -q --filter name=${CONTAINER}*)
+CONTAINER_VOL1=/var/lib/grafana
+CONTAINER_VOL2=/var/lib/influxdb
+CONTAINER_VOL3=
+BACKUP_DIR=<YOUR_BACKUP_DIRECTORY_HERE>/${CONTAINER}
+TODAY=$(date +"%Y%m%d_%H%M")
+
+if [ ! -d "${BACKUP_DIR}" ] ; then
+   mkdir ${BACKUP_DIR}
+fi
+
+docker pause ${RUNNING_CONTAINER}
+
+docker run --rm  --volumes-from ${CONTAINER} -v ${BACKUP_DIR}:/backup busybox tar cvpfz /backup/${CONTAINER}cfg_${TODAY}.tgz ${CONTAINER_VOL1} ${CONTAINER_VOL2} ${CONTAINER_VOL3}
+
+docker unpause ${RUNNING_CONTAINER}
+
+# check and delete backupfiles older dan 7 dagen
+
+find ${BACKUP_DIR}/${CONTAINER}cfg*  -mtime +7 -exec ls -ltr  {} \;
+find ${BACKUP_DIR}/${CONTAINER}cfg*.tgz -mtime +7 -exec ls -ltr {} \;
+find ${BACKUP_DIR}/${CONTAINER}cfg*  -mtime +7 -exec ls -ltr  {} \;
 ```
 
 ## Mapped Ports
