@@ -44,8 +44,8 @@ RUN wget  https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSIO
      
 # Install Grafana
 RUN apt-get install -y adduser libfontconfig1 \
-     && wget https://dl.grafana.com/oss/release/grafana-rpi_${GRAFANA_VERSION}_armhf.deb \
-     && dpkg -i grafana-rpi_${GRAFANA_VERSION}_armhf.deb && rm grafana-rpi_${GRAFANA_VERSION}_armhf.deb \
+     && wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_armhf.deb \
+     && dpkg -i grafana_${GRAFANA_VERSION}_armhf.deb && rm grafana_${GRAFANA_VERSION}_armhf.deb \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
