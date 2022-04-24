@@ -1,4 +1,4 @@
-FROM arm32v7/debian:bullseye-slim
+FROM arm64v8/debian:bullseye-slim
 LABEL maintainer="Dick Pluim <dockerhub@dickpluim.com>"
 
 # Default versions
@@ -33,19 +33,19 @@ RUN rm /var/lib/apt/lists/* -vf \
         supervisor 
     
 # Install InfluxDB
-RUN wget https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_armhf.deb \
-    && dpkg -i influxdb_${INFLUXDB_VERSION}_armhf.deb && rm influxdb_${INFLUXDB_VERSION}_armhf.deb 
+RUN wget https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_arm64.deb \
+    && dpkg -i influxdb_${INFLUXDB_VERSION}_arm64.deb && rm influxdb_${INFLUXDB_VERSION}_arm64.deb 
 
 # Install Telegraf
-RUN wget  https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_armhf.tar.gz \
-     && tar -xf telegraf-${TELEGRAF_VERSION}_linux_armhf.tar.gz -C / && rm telegraf-${TELEGRAF_VERSION}_linux_armhf.tar.gz \
+RUN wget  https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_arm64.tar.gz \
+     && tar -xf telegraf-${TELEGRAF_VERSION}_linux_arm64.tar.gz -C / && rm telegraf-${TELEGRAF_VERSION}_linux_arm64.tar.gz \
      && cd /telegraf-${TELEGRAF_VERSION} && cp -R * / && cd / && rm -rf telegraf-${TELEGRAF_VERSION} \
      && groupadd -g 998 telegraf && useradd -ms /bin/bash -u 998 -g 998 telegraf 
      
 # Install Grafana
 RUN apt-get install -y adduser libfontconfig1 \
-     && wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_armhf.deb \
-     && dpkg -i grafana_${GRAFANA_VERSION}_armhf.deb && rm grafana_${GRAFANA_VERSION}_armhf.deb \
+     && wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_arm64.deb \
+     && dpkg -i grafana_${GRAFANA_VERSION}_arm64.deb && rm grafana_${GRAFANA_VERSION}_arm64.deb \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
