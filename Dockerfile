@@ -1,16 +1,21 @@
-FROM arm64v8/debian:bullseye-slim
+ARG TARGETOS
+FROM arm64v8/debian:bullseye-slim as debian-arm64
+FROM arm32v7/debian:bullseye-slim as debian-arm
 LABEL maintainer="Dick Pluim <dockerhub@dickpluim.com>"
+
+FROM debian-${TARGETARCH}
 
 # Default versions
 ENV INFLUXDB_VERSION=1.8.10
-ENV TELEGRAF_VERSION=1.22.1
-ENV GRAFANA_VERSION=8.4.7
+ENV TELEGRAF_VERSION=1.24.2
+ENV GRAFANA_VERSION=9.2.1
 
 ENV GF_DATABASE_TYPE=sqlite3
 
 WORKDIR /root
 
 # Clear previous sources
+
 RUN rm /var/lib/apt/lists/* -vf \
     # Base dependencies
     && apt-get -y update \
@@ -31,21 +36,23 @@ RUN rm /var/lib/apt/lists/* -vf \
         wget \
         gnupg \
         supervisor 
-    
-# Install InfluxDB
-RUN wget https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_arm64.deb \
-    && dpkg -i influxdb_${INFLUXDB_VERSION}_arm64.deb && rm influxdb_${INFLUXDB_VERSION}_arm64.deb 
 
+# Install InfluxDB
+ARG TARGETARCH 
+ARG ARCH=${TARGETARCH}
+RUN if [ "${TARGETARCH}" = "arm" ]; then ARCH="armhf"; fi && \
+    if [ "$[TARGETARCH]" = "arm64" ]; then ARCH="arm64"; fi && \
+  wget https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
+    && dpkg -i influxdb_${INFLUXDB_VERSION}_${ARCH}.deb && rm influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
 # Install Telegraf
-RUN wget  https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_arm64.tar.gz \
-     && tar -xf telegraf-${TELEGRAF_VERSION}_linux_arm64.tar.gz -C / && rm telegraf-${TELEGRAF_VERSION}_linux_arm64.tar.gz \
+ && wget  https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz \
+     && tar -xf telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz -C / && rm telegraf-${TELEGRAF_VERSION}_linux_${ARCH}.tar.gz \
      && cd /telegraf-${TELEGRAF_VERSION} && cp -R * / && cd / && rm -rf telegraf-${TELEGRAF_VERSION} \
-     && groupadd -g 998 telegraf && useradd -ms /bin/bash -u 998 -g 998 telegraf 
-     
+     && groupadd -g 998 telegraf && useradd -ms /bin/bash -u 998 -g 998 telegraf \
 # Install Grafana
-RUN apt-get install -y adduser libfontconfig1 \
-     && wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_arm64.deb \
-     && dpkg -i grafana_${GRAFANA_VERSION}_arm64.deb && rm grafana_${GRAFANA_VERSION}_arm64.deb \
+ && apt-get install -y adduser libfontconfig1 \
+     && wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_${ARCH}.deb \
+     && dpkg -i grafana_${GRAFANA_VERSION}_${ARCH}.deb && rm grafana_${GRAFANA_VERSION}_${ARCH}.deb \
     # Cleanup
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
